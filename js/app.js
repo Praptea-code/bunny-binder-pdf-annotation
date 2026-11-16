@@ -34,16 +34,18 @@ async function loadLib() { docs = await all('docs'); renderLib() }
 
 async function addFiles(files) {
   for (const f of files) {
-    if (f.type !== 'application/pdf' && !/\.pdf$/i.test(f.name)) { toast('Only PDF files, please'); continue }
+    const isPdf = f.type === 'application/pdf' || /\.(pdf)$/i.test(f.name);
+    if (!isPdf) { toast('Only PDF files, please'); continue }
     toast('Adding ' + f.name + '…');
     const d = { id: uid(), name: f.name.replace(/\.pdf$/i, ''), blob: f, size: f.size, added: Date.now(), opened: 0, fav: false, tags: [] };
     try {
+      if (f.size > 50 * 1024 * 1024) { toast(f.name + ' is too large (max 50MB)'); continue }
       const p = await pdfjsLib.getDocument({ data: await f.arrayBuffer() }).promise; d.pages = p.numPages;
       const pg = await p.getPage(1), v0 = pg.getViewport({ scale: 1 }), v = pg.getViewport({ scale: 300 / v0.width }), c = document.createElement('canvas');
       c.width = v.width; c.height = v.height;
       await pg.render({ canvasContext: c.getContext('2d'), viewport: v }).promise; d.thumb = c.toDataURL('image/jpeg', .7);
     } catch (e) { console.error(e); toast("Couldn't read " + f.name); continue }
-    await put('docs', d);
+    try { await put('docs', d) } catch (e) { if (e.name === 'QuotaExceededError') toast('Storage full: ' + f.name + ' cannot be saved'); else toast('Error saving ' + f.name) }
   }
   loadLib();
 }
