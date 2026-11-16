@@ -1,0 +1,20 @@
+# Dependencies
+node_modules/
+
+# Environment
+.env*
+
+# Build output
+dist/
+build/
+
+# IndexedDB
+*.db
+*.indexeddb
+
+# OS
+.DS_Store
+Thumbs.db
+
+# PDF worker
+lib/pdf.worker.min.js
