@@ -10,7 +10,7 @@ build/
 
 # IndexedDB
 *.db
-*.indexeddb
+*.indexedod
 
 # OS
 .DS_Store
