@@ -18,3 +18,11 @@ Thumbs.db
 
 # PDF worker
 lib/pdf.worker.min.js
+
+# OS junk
+*.tmp
+*.log
+
+# Editor configs
+.vscode/
+.idea/
