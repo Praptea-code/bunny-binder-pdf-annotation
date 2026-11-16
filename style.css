@@ -1,7 +1,0 @@
-:root{--ink:#5b3047;--pink:#fbc9dc;--bg:#fff}
-*{box-sizing:border-box}
-html,body{margin:0;height:100%}
-body{font:600 15px/1.45 Nunito,system-ui,sans-serif;color:var(--ink);background:var(--bg)}
-h1,h2,h3,.btn,.chip{font-family:Fredoka,Nunito,system-ui,sans-serif}
-[hidden]{display:none!important}
-:focus-visible{outline:3px solid var(--pink);outline-offset:2px}
