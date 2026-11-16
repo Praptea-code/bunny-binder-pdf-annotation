@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bunny Binder</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- LIBRARY -->
+<div id="libView">
+  <div class="gingham"></div><div class="lace"></div>
+  <header class="hero">
+    <h1>Bunny Binder</h1>
+    <p>Every PDF tucked in one cozy spot</p>
+  </header>
+  <div class="bar">
+    <input id="q" type="search" placeholder="Search PDFs…" aria-label="Search PDFs">
+    <button id="favBtn" class="chip">★ Favorites</button>
+    <select id="sort" aria-label="Sort"><option value="recent">Recently opened</option><option value="name">Name</option><option value="added">Date added</option></select>
+    <label class="btn" for="file">+ Add PDFs</label><input id="file" type="file" accept="application/pdf" multiple hidden>
+  </div>
+  <div id="tags" class="tagrow"></div>
+  <main id="grid" class="grid"></main>
+  <p id="empty" class="empty" hidden>No PDFs yet.<br>Drop files anywhere on this page or press “Add PDFs”.</p>
+  <div class="lace flip"></div><div class="gingham"></div>
+</div>
+
+<!-- READER -->
+<div id="readView" hidden>
+  <div class="gingham thin"></div>
+  <div class="tb">
+    <button id="back" class="btn">‹ Library</button>
+    <strong id="title"></strong>
+    <div class="body">
+      <div id="stage"></div>
+    </div>
+  </div>
+</div>
+</body>
