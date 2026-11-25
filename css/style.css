@@ -79,13 +79,13 @@ body.drop #libView::after{content:"Drop your PDFs here 🐰";position:fixed;inse
 .page{position:relative;margin:0 auto 20px;background:#fff;box-shadow:0 0 0 2px var(--ink),6px 6px 0 var(--pink2);border-radius:4px}
 .page>canvas{position:absolute;left:0;top:0}
 .hl,.ink,.an,.tl{position:absolute;inset:0}
-.hl{pointer-events:none;mix-blend-mode:multiply}.hl i{position:absolute;border-radius:3px}
-.tl{overflow:hidden;line-height:1}
+.hl{pointer-events:none;mix-blend-mode:multiply;z-index:1}.hl i{position:absolute;border-radius:3px}
+.tl{overflow:hidden;line-height:1;z-index:2}
 .tl span,.tl br{position:absolute;color:transparent;white-space:pre;cursor:text;transform-origin:0 0}
 .tl ::selection{background:rgba(255,122,168,.38)}
-.ink{width:100%;height:100%;pointer-events:none}
+.ink{width:100%;height:100%;pointer-events:none;z-index:2}
 .ink path{fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
-.an{pointer-events:none}.an>*{pointer-events:auto}
+.an{pointer-events:none;z-index:5}.an>*{pointer-events:auto}
 [data-tool=note] .tl,[data-tool=text] .tl,[data-tool=pen] .tl,[data-tool=erase] .tl{pointer-events:none}
 [data-tool=pen] .an>*{pointer-events:none}
 [data-tool=pen] .page,[data-tool=erase] .page{touch-action:none}
@@ -93,7 +93,9 @@ body.drop #libView::after{content:"Drop your PDFs here 🐰";position:fixed;inse
 
 .bub{position:absolute;transform:translate(-30%,-70%);background:#fff;border-radius:var(--radius);width:calc(var(--s)*24px);height:calc(var(--s)*24px);font-size:calc(var(--s)*12px);padding:0;cursor:pointer;line-height:1}
 .bub:hover{transform:translate(-30%,calc(-70% + 1px))}
-.n{position:absolute;width:calc(var(--s)*160px);border-radius:4px;box-shadow:2px 3px 0 rgba(91,48,71,.25);transform:rotate(-1.5deg);padding:0 0 4px}
+.n{position:absolute;width:calc(var(--s)*160px);border-radius:var(--radius);box-shadow:2px 3px 0 rgba(91,48,71,.25);transform:rotate(-1.5deg);padding:0 0 4px;z-index:6;pointer-events:auto}
+.n textarea{pointer-events:auto}
+.nh .ico{width:12px;height:12px}
 .n::before{content:"";position:absolute;left:50%;top:-7px;width:44px;height:14px;margin-left:-22px;background:rgba(255,255,255,.7);border:1px dashed var(--pink2)}
 .nh{display:flex;justify-content:space-between;align-items:center;padding:calc(var(--s)*4px) calc(var(--s)*6px) 0;cursor:grab;font-size:calc(var(--s)*12px);touch-action:none}
 .nh button,.t .x{border:0;background:none;cursor:pointer;color:var(--ink);font-size:calc(var(--s)*16px);line-height:1;padding:0 2px}

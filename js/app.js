@@ -143,14 +143,20 @@ addEventListener('keydown', e => {
 const pos = (e, p) => { const r = p.getBoundingClientRect(); return [(e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height] };
 const ay = a => a.rects ? a.rects[0].y : a.pts ? a.pts[0][1] : a.y;
 function save() { clearTimeout(saveT); saveT = setTimeout(() => put('ann', { id: cur.id, list: anns }), 300) }
-function add(a) { a.id = uid(); a.c = ci; anns.push(a); save(); draw(a.page); renderSide(); setTool('select'); const el = $(`[data-id="${a.id}"] textarea, [data-id="${a.id}"] .tx`); el && el.focus() }
+function add(a) {
+  a.id = uid(); a.c = ci; anns.push(a); save(); draw(a.page); renderSide(); setTool('select');
+  const el = $(`[data-id="${a.id}"] textarea, [data-id="${a.id}"] .tx`);
+  if (el) setTimeout(() => el.focus(), 0);
+}
 function rm(a) { anns = anns.filter(x => x !== a); save(); draw(a.page); renderSide() }
 
 function down(e, p) {
   if (e.target.closest('.n,.t,.bub')) return;
   const i = +p.dataset.i, [x, y] = pos(e, p);
-  if (tool === 'note') add({ type: 'note', page: i, x, y, text: '' });
-  else if (tool === 'text') add({ type: 'text', page: i, x, y, text: '' });
+  if (tool === 'note' || tool === 'text') {
+    e.preventDefault(); e.stopPropagation();
+    add({ type: tool, page: i, x, y, text: '' });
+  }
   else if (tool === 'pen') stroke(e, p, i);
   else if (tool === 'erase') { const a = anns.find(a => a.page === i && (a.type === 'pen' ? a.pts.some(q => Math.hypot(q[0] - x, q[1] - y) < .015) : a.type === 'hl' && hlAt(i, x, y) === a)); if (a) rm(a) }
 }
@@ -208,8 +214,15 @@ function drag(grip, el, a) {
 }
 function noteEl(a) {
   const n = h('div', 'n'); n.dataset.id = a.id; n.style.cssText = `left:${a.x * 100}%;top:${a.y * 100}%;background:${C[a.c][0]}`;
-  const hd = h('div', 'nh'), x = h('button', '', '×'); x.title = 'Delete note'; x.onclick = () => rm(a); hd.append(h('span', '', '📌'), x); drag(hd, n, a);
-  const t = h('textarea'); t.value = a.text; t.placeholder = 'Write a note…'; t.oninput = () => { a.text = t.value; save(); renderSide() };
+  const stop = e => e.stopPropagation();
+  ['pointerdown', 'mousedown', 'click', 'keydown'].forEach(t => n.addEventListener(t, stop));
+  const hd = h('div', 'nh'), x = h('button', '', '×'); x.title = 'Delete note'; x.onclick = () => rm(a);
+  const pin = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); pin.setAttribute('class', 'ico'); pin.setAttribute('aria-hidden', 'true');
+  const use = document.createElementNS('http://www.w3.org/2000/svg', 'use'); use.setAttribute('href', '#i-note'); pin.append(use);
+  hd.append(pin, x); drag(hd, n, a);
+  const t = h('textarea'); t.value = a.text; t.placeholder = 'Write a note…'; t.setAttribute('aria-label', 'Note text');
+  t.oninput = () => { a.text = t.value; save() };
+  t.onblur = () => { a.text = t.value; save() };
   n.append(hd, t); return n;
 }
 function textEl(a) {
