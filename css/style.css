@@ -5,6 +5,8 @@ body{font:600 15px/1.45 Nunito,system-ui,sans-serif;color:var(--ink);background:
 h1,h2,h3,.btn,.chip,.tb button,select{font-family:Fredoka,Nunito,system-ui,sans-serif}
 [hidden]{display:none!important}
 :focus-visible{outline:3px solid var(--hot);outline-offset:2px}
+.icon-sprite{position:absolute;width:0;height:0;overflow:hidden}
+.ico{display:block;width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none}
 
 /* gingham + lace trims */
 .gingham{height:54px;background:repeating-linear-gradient(0deg,rgba(246,169,200,.5) 0 18px,transparent 18px 36px),repeating-linear-gradient(90deg,rgba(246,169,200,.5) 0 18px,transparent 18px 36px),#fff7fa}
@@ -64,7 +66,8 @@ body.drop #libView::after{content:"Drop your PDFs here 🐰";position:fixed;inse
 .tb strong{font:500 16px Fredoka,sans-serif;max-width:22ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .grp{display:flex;align-items:center;gap:6px}
 .tb .grp button{width:38px;height:38px;padding:0;font-size:17px;background:#fff}
-.tb .grp button.on{background:var(--hot);border-color:var(--ink);box-shadow:inset 0 0 0 2px #fff,var(--shadow)}
+.tb .grp button.on{background:#ffe3ee;border-color:var(--ink);box-shadow:inset 0 0 0 2px var(--hot),var(--shadow)}
+#sideBtn{gap:6px}
 #sw button,#pc button{width:24px!important;height:24px!important;padding:0;border-radius:6px;box-shadow:1px 1px 0 var(--ink);border-width:2px}
 #sw button:hover,#pc button:hover{transform:translateY(1px);box-shadow:1px 1px 0 var(--ink)}
 #sw button.on,#pc button.on{outline:3px solid var(--hot);outline-offset:1px}
