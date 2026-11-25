@@ -81,6 +81,8 @@ body.drop #libView::after{content:"Drop your PDFs here 🐰";position:fixed;inse
 .hl,.ink,.an,.tl{position:absolute;inset:0}
 .hl{pointer-events:none;mix-blend-mode:multiply;z-index:1}.hl i{position:absolute;border-radius:3px}
 .hl i.cm{background:rgba(255,122,168,.3);mix-blend-mode:normal}
+@keyframes spot{0%{opacity:0;transform:scale(.9)}35%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1)}}
+.hl i.flash-spot{background:rgba(255,122,168,.65);outline:3px dashed var(--ink);mix-blend-mode:normal;animation:spot 1.6s ease forwards}
 .tl{overflow:hidden;line-height:1;z-index:2}
 .tl span,.tl br{position:absolute;color:transparent;white-space:pre;cursor:text;transform-origin:0 0}
 .tl ::selection{background:rgba(255,122,168,.38)}

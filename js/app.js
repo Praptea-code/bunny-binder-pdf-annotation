@@ -300,11 +300,20 @@ function renderSide() {
     it.append(h('small', '', new Date(a.time || Date.now()).toLocaleString()));
     it.onclick = () => {
       const p = $('#stage').children[a.page];
-      if (p) $('#stage').scrollTo({ top: p.offsetTop + ay(a) * p.offsetHeight - 90, behavior: 'smooth' });
+      if (p) {
+        $('#stage').scrollTo({ top: p.offsetTop + ay(a) * p.offsetHeight - 90, behavior: 'smooth' });
+        flashSpot(a, p);
+      }
       if (innerWidth < 700) s.classList.remove('open');
     };
     s.append(it);
   });
+}
+function flashSpot(a, p) {
+  const r = (a.rects || (a.rect ? [a.rect] : []))[0]; if (!r) return;
+  const f = h('i', 'flash-spot');
+  f.style.cssText = `left:${r.x * 100}%;top:${r.y * 100}%;width:${r.w * 100}%;height:${r.h * 100}%`;
+  p.querySelector('.hl').append(f); setTimeout(() => f.remove(), 1600);
 }
 $('#sideBtn').onclick = () => $('#side').classList.toggle('open');
 
