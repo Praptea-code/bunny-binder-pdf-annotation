@@ -132,3 +132,6 @@ dialog::backdrop{background:rgba(255,200,222,.55)}
 dialog p{margin:0 0 10px}#dlgIn{width:100%;border-radius:var(--radius-in)}
 #toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--ink);color:#fff;border-radius:var(--radius);padding:8px 18px;z-index:80}
 @media(prefers-reduced-motion:no-preference){.card{transition:transform .15s}.card:hover{transform:translateY(-3px) rotate(-.6deg)}}
+
+#libView{min-height:100vh;display:flex;flex-direction:column}
+#libView>.lace.flip{margin-top:auto}
