@@ -286,16 +286,23 @@ function pop(a, e, isNew = false) {
 }
 addEventListener('pointerdown', e => { if (!e.target.closest('#pop,.bub')) $('#pop').hidden = true }, true);
 
-/* side panel */
+/* side panel: only comments */
 function renderSide() {
-  const s = $('#side'); s.textContent = ''; s.append(h('h2', '', `Notes & comments (${anns.length})`));
-  if (!anns.length) s.append(h('p', 'hint', 'Nothing here yet. Pick a tool and mark up your PDF.'));
-  [...anns].sort((a, b) => a.page - b.page || ay(a) - ay(b)).forEach(a => {
-    const it = h('button', 'item'), ic = { hl: '🖍️', note: '📝', text: 'Aa', pen: '✏️' }[a.type];
-    it.append(h('b', '', 'p.' + (a.page + 1)), document.createTextNode(ic + ' '));
-    if (a.type === 'hl') { it.append(h('q', '', (a.text || 'Highlight').slice(0, 90))); if (a.comment) it.append(h('em', '', a.comment)) }
-    else it.append(h('span', '', a.type === 'pen' ? 'Drawing' : a.text || '(empty)'));
-    it.onclick = () => { const p = $('#stage').children[a.page]; $('#stage').scrollTo({ top: p.offsetTop + ay(a) * p.offsetHeight - 90, behavior: 'smooth' }); if (innerWidth < 700) s.classList.remove('open') };
+  const s = $('#side'); s.textContent = '';
+  const comments = anns.filter(a => a.type === 'comment' && a.comment).sort((a, b) => a.page - b.page || ay(a) - ay(b));
+  s.append(h('h2', '', `Comments (${comments.length})`));
+  if (!comments.length) s.append(h('p', 'hint', 'No comments yet. Select text or drag a region with the highlight tool, then add a comment.'));
+  comments.forEach(a => {
+    const it = h('button', 'item');
+    it.append(h('b', '', 'p.' + (a.page + 1)), icon('i-comment'));
+    if (a.text) it.append(h('q', '', a.text.slice(0, 90)));
+    it.append(h('em', '', a.comment));
+    it.append(h('small', '', new Date(a.time || Date.now()).toLocaleString()));
+    it.onclick = () => {
+      const p = $('#stage').children[a.page];
+      if (p) $('#stage').scrollTo({ top: p.offsetTop + ay(a) * p.offsetHeight - 90, behavior: 'smooth' });
+      if (innerWidth < 700) s.classList.remove('open');
+    };
     s.append(it);
   });
 }

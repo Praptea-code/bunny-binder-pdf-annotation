@@ -115,7 +115,9 @@ body.drop #libView::after{content:"Drop your PDFs here 🐰";position:fixed;inse
 .item{display:block;width:100%;text-align:left;background:#fff8fb;padding:8px 10px;margin-bottom:8px;cursor:pointer;color:var(--ink);font:inherit}
 .item b{font:500 12px Fredoka,sans-serif;background:var(--pink);border-radius:var(--radius);padding:1px 8px;margin-right:6px}
 .item em{display:block;font-style:normal;margin-top:4px;opacity:.85}
-.item q{opacity:.75;font-size:13px}
+.item q{display:block;opacity:.75;font-size:13px}
+.item small{display:block;margin-top:4px;font-size:11px;opacity:.6}
+.item .ico{display:inline-block;width:14px;height:14px;vertical-align:-2px;margin-right:6px}
 @media(max-width:700px){#side.open{position:fixed;right:0;top:0;bottom:0;z-index:30;width:min(86vw,320px);box-shadow:-6px 0 0 var(--pink2)}.tb strong{display:none}}
 
 #pop{position:fixed;z-index:60;width:260px;background:#fff;border:2px solid var(--ink);border-radius:12px;box-shadow:5px 5px 0 var(--pink2);padding:12px}
