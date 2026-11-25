@@ -80,6 +80,7 @@ body.drop #libView::after{content:"Drop your PDFs here 🐰";position:fixed;inse
 .page>canvas{position:absolute;left:0;top:0}
 .hl,.ink,.an,.tl{position:absolute;inset:0}
 .hl{pointer-events:none;mix-blend-mode:multiply;z-index:1}.hl i{position:absolute;border-radius:3px}
+.hl i.cm{background:rgba(255,122,168,.3);mix-blend-mode:normal}
 .tl{overflow:hidden;line-height:1;z-index:2}
 .tl span,.tl br{position:absolute;color:transparent;white-space:pre;cursor:text;transform-origin:0 0}
 .tl ::selection{background:rgba(255,122,168,.38)}
@@ -93,6 +94,7 @@ body.drop #libView::after{content:"Drop your PDFs here 🐰";position:fixed;inse
 
 .bub{position:absolute;transform:translate(-30%,-70%);background:#fff;border-radius:var(--radius);width:calc(var(--s)*24px);height:calc(var(--s)*24px);font-size:calc(var(--s)*12px);padding:0;cursor:pointer;line-height:1}
 .bub:hover{transform:translate(-30%,calc(-70% + 1px))}
+.bub .ico{width:14px;height:14px;stroke-width:2}
 .n{position:absolute;width:calc(var(--s)*160px);border-radius:var(--radius);box-shadow:2px 3px 0 rgba(91,48,71,.25);transform:rotate(-1.5deg);padding:0 0 4px;z-index:6;pointer-events:auto}
 .n textarea{pointer-events:auto}
 .nh .ico{width:12px;height:12px}

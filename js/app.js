@@ -4,6 +4,11 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'lib/pdf.worker.min.js';
 /* ---------- helpers ---------- */
 const $ = s => document.querySelector(s);
 const h = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e };
+const icon = id => {
+  const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  s.setAttribute('class', 'ico'); s.setAttribute('aria-hidden', 'true');
+  const u = document.createElementNS('http://www.w3.org/2000/svg', 'use'); u.setAttribute('href', '#' + id); s.append(u); return s;
+};
 const uid = () => Math.random().toString(36).slice(2, 10);
 const C = [['#ffb3cf', '#e0457b'], ['#fff2a8', '#c99700'], ['#b8f0d4', '#1f9d6a'], ['#bfe3ff', '#2f7fd0'], ['#dcc8ff', '#7a4fd1']]; // [soft, deep]
 let toastT;
@@ -88,7 +93,7 @@ addEventListener('dragleave', e => { if (!e.relatedTarget) document.body.classLi
 addEventListener('drop', e => { e.preventDefault(); document.body.classList.remove('drop'); if (!$('#libView').hidden) addFiles([...e.dataTransfer.files]) });
 
 /* ---------- reader ---------- */
-let cur, pdf, anns = [], sizes = [], tool = 'select', ci = 0, scale = 1.2, io, saveT;
+let cur, pdf, anns = [], sizes = [], tool = 'select', ci = 0, scale = 1.2, io, saveT, hlDrag;
 
 async function openDoc(id) {
   cur = docs.find(x => x.id === id); cur.opened = Date.now(); put('docs', cur);
@@ -115,7 +120,7 @@ function build() {
   sizes.forEach(([w, hh], i) => {
     const p = h('div', 'page'); p.dataset.i = i; p.style.width = w * scale + 'px'; p.style.height = hh * scale + 'px';
     p.innerHTML = '<canvas></canvas><div class="hl"></div><div class="tl textLayer"></div><svg class="ink" viewBox="0 0 1 1" preserveAspectRatio="none"></svg><div class="an"></div>';
-    p.onpointerdown = e => down(e, p); p.onclick = e => clickPage(e, p);
+    p.onpointerdown = e => down(e, p);
     st.append(p); io.observe(p); draw(i);
   });
 }
@@ -141,7 +146,7 @@ addEventListener('keydown', e => {
 
 /* annotation model: coordinates are fractions of the page, so zoom never breaks them */
 const pos = (e, p) => { const r = p.getBoundingClientRect(); return [(e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height] };
-const ay = a => a.rects ? a.rects[0].y : a.pts ? a.pts[0][1] : a.y;
+const ay = a => a.rects ? a.rects[0].y : a.rect ? a.rect.y : a.pts ? a.pts[0][1] : a.y;
 function save() { clearTimeout(saveT); saveT = setTimeout(() => put('ann', { id: cur.id, list: anns }), 300) }
 function add(a) {
   a.id = uid(); a.c = ci; anns.push(a); save(); draw(a.page); renderSide(); setTool('select');
@@ -157,12 +162,9 @@ function down(e, p) {
     e.preventDefault(); e.stopPropagation();
     add({ type: tool, page: i, x, y, text: '' });
   }
+  else if (tool === 'hl') hlDrag = { p, i, x, y, cx: e.clientX, cy: e.clientY };
   else if (tool === 'pen') stroke(e, p, i);
   else if (tool === 'erase') { const a = anns.find(a => a.page === i && (a.type === 'pen' ? a.pts.some(q => Math.hypot(q[0] - x, q[1] - y) < .015) : a.type === 'hl' && hlAt(i, x, y) === a)); if (a) rm(a) }
-}
-function clickPage(e, p) {
-  if (!['select', 'hl'].includes(tool) || !getSelection().isCollapsed || e.target.closest('.n,.t,.bub')) return;
-  const [x, y] = pos(e, p), a = hlAt(+p.dataset.i, x, y); if (a) pop(a, e);
 }
 const hlAt = (i, x, y) => [...anns].reverse().find(a => a.type === 'hl' && a.page === i && a.rects.some(r => x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h));
 
@@ -177,8 +179,19 @@ function stroke(e, p, i) {
   addEventListener('pointermove', mv); addEventListener('pointerup', up);
 }
 
-/* highlight from text selection */
-$('#stage').addEventListener('pointerup', e => { if (tool === 'hl') setTimeout(() => makeHl(e), 0) });
+/* highlights and comments from text selections or dragged regions */
+$('#stage').addEventListener('pointerup', e => {
+  if (tool !== 'hl') return;
+  setTimeout(() => {
+    const s = getSelection();
+    if (s.rangeCount && !s.isCollapsed) { hlDrag = null; makeHl(e); return }
+    const d = hlDrag; hlDrag = null;
+    if (!d || Math.hypot(e.clientX - d.cx, e.clientY - d.cy) < 6) return;
+    const [x, y] = pos(e, d.p), rect = { x: Math.min(d.x, x), y: Math.min(d.y, y), w: Math.abs(x - d.x), h: Math.abs(y - d.y) };
+    if (rect.w < .01 || rect.h < .005) return;
+    pop({ id: uid(), type: 'comment', page: d.i, rect, text: '', comment: '', time: Date.now(), c: ci }, e, true);
+  }, 0);
+});
 function makeHl(e) {
   const s = getSelection(); if (!s.rangeCount || s.isCollapsed) return;
   const rs = [...s.getRangeAt(0).getClientRects()].filter(r => r.width > 2 && r.height > 2), txt = s.toString().replace(/\s+/g, ' ').trim(), made = [];
@@ -186,10 +199,12 @@ function makeHl(e) {
     const pr = p.getBoundingClientRect();
     const m = rs.filter(r => { const cy = r.top + r.height / 2; return cy > pr.top && cy < pr.bottom && r.width < pr.width * .97 })
       .map(r => ({ x: (r.left - pr.left) / pr.width, y: (r.top - pr.top) / pr.height, w: r.width / pr.width, h: r.height / pr.height }));
-    if (m.length) made.push({ id: uid(), type: 'hl', page: i, rects: m, c: ci, text: txt, comment: '' });
+    if (m.length) made.push({ id: uid(), type: 'hl', page: i, rects: m, c: ci, text: txt });
   });
   if (!made.length) return;
-  anns.push(...made); s.removeAllRanges(); save(); made.forEach(a => draw(a.page)); renderSide(); pop(made[0], e);
+  anns.push(...made); s.removeAllRanges(); save(); made.forEach(a => draw(a.page)); renderSide();
+  const a = made[0];
+  pop({ id: uid(), type: 'comment', page: a.page, rects: a.rects, text: txt, comment: '', time: Date.now(), c: ci }, e, true);
 }
 
 /* draw one page's annotations */
@@ -197,9 +212,23 @@ function draw(i) {
   const p = $('#stage').children[i]; if (!p || !p.querySelector) return;
   const hl = p.querySelector('.hl'), ink = p.querySelector('.ink'), an = p.querySelector('.an'); hl.textContent = ink.textContent = an.textContent = '';
   anns.filter(a => a.page === i).forEach(a => {
-    if (a.type === 'hl') {
-      a.rects.forEach(r => { const d = h('i'); d.style.cssText = `left:${r.x * 100}%;top:${r.y * 100}%;width:${r.w * 100}%;height:${r.h * 100}%;background:${C[a.c][0]}`; hl.append(d) });
-      if (a.comment) { const b = h('button', 'bub', '💬'); const r = a.rects[0]; b.style.left = (r.x + r.w) * 100 + '%'; b.style.top = r.y * 100 + '%'; b.onclick = e => pop(a, e); an.append(b) }
+    if (a.type === 'hl' || a.type === 'comment') {
+      const rects = a.rects || (a.rect ? [a.rect] : []);
+      rects.forEach(r => {
+        const d = h('i', a.type === 'comment' ? 'cm' : '');
+        d.style.cssText = `left:${r.x * 100}%;top:${r.y * 100}%;width:${r.w * 100}%;height:${r.h * 100}%;background:${C[a.c][0]}`;
+        if (a.type === 'comment') d.style.borderBottom = `2px dashed ${C[a.c][1]}`;
+        hl.append(d);
+      });
+      if (a.type === 'comment') {
+        const r = rects[0]; if (!r) return;
+        const b = h('button', 'bub'); b.append(icon('i-comment'));
+        b.title = 'Open comment'; b.setAttribute('aria-label', 'Open comment');
+        b.style.left = (r.x + r.w) * 100 + '%'; b.style.top = r.y * 100 + '%';
+        b.onpointerdown = e => e.stopPropagation();
+        b.onclick = e => { e.stopPropagation(); pop(a, e) };
+        an.append(b);
+      }
     } else if (a.type === 'pen') ink.append(pathEl(a));
     else an.append(a.type === 'note' ? noteEl(a) : textEl(a));
   });
@@ -232,14 +261,28 @@ function textEl(a) {
   del.onclick = () => rm(a); drag(g, t, a); t.append(g, x, del); return t;
 }
 
-/* comment popover for highlights */
-function pop(a, e) {
-  const o = $('#pop'); o.hidden = false; o.style.left = Math.max(8, Math.min(e.clientX, innerWidth - 276)) + 'px'; o.style.top = Math.max(8, Math.min(e.clientY + 14, innerHeight - 230)) + 'px';
-  $('#pq').textContent = a.text ? '“' + a.text.slice(0, 110) + (a.text.length > 110 ? '…' : '') + '”' : '';
-  const t = $('#pt'); t.value = a.comment || ''; t.oninput = () => { a.comment = t.value; save(); renderSide() }; t.onblur = () => draw(a.page);
-  $('#pc').replaceChildren(...C.map((c, k) => { const b = h('button', k === a.c ? 'on' : ''); b.style.background = c[0]; b.onclick = () => { a.c = k; save(); draw(a.page); renderSide(); pop(a, e) }; return b }));
-  $('#pd').onclick = () => { o.hidden = true; rm(a) }; $('#px').onclick = () => { o.hidden = true; draw(a.page) };
-  t.focus();
+/* comment popover */
+function pop(a, e, isNew = false) {
+  const o = $('#pop'), w = { ...a };
+  o.hidden = false;
+  o.style.left = Math.max(8, Math.min(e.clientX, innerWidth - 276)) + 'px';
+  o.style.top = Math.max(8, Math.min(e.clientY + 14, innerHeight - 250)) + 'px';
+  $('#pq').textContent = w.text ? '“' + w.text.slice(0, 110) + (w.text.length > 110 ? '…' : '') + '”' : 'Selected region';
+  const t = $('#pt'); t.value = w.comment || '';
+  $('#pDelete').hidden = isNew;
+  $('#pc').replaceChildren(...C.map((c, k) => {
+    const b = h('button', k === w.c ? 'on' : ''); b.style.background = c[0]; b.title = 'Comment color';
+    b.onclick = () => { w.c = k; [...$('#pc').children].forEach((x, j) => x.classList.toggle('on', j === k)) }; return b;
+  }));
+  $('#pSave').onclick = () => {
+    const v = t.value.trim(); if (!v) { toast('Write a comment first'); return }
+    w.comment = v; w.time = w.time || Date.now(); Object.assign(a, w);
+    if (isNew) anns.push(a);
+    o.hidden = true; save(); draw(a.page); renderSide();
+  };
+  $('#pCancel').onclick = () => { o.hidden = true };
+  $('#pDelete').onclick = () => { o.hidden = true; rm(a) };
+  setTimeout(() => t.focus(), 0);
 }
 addEventListener('pointerdown', e => { if (!e.target.closest('#pop,.bub')) $('#pop').hidden = true }, true);
 
