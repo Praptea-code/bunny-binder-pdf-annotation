@@ -43,7 +43,3 @@ Select a color using the color picker toolbar before marking up your PDF.
 | T   | Type text |
 | P   | Pen / Freehand draw |
 | E   | Eraser |
-
-## Footer
-
-Made with 🐰 by [Praptea](https://github.com/Praptea-code) - a cozy PDF annotator that runs entirely in the browser.
